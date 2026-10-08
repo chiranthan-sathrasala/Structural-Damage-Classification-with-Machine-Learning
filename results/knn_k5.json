@@ -1,0 +1,26 @@
+{
+  "model": "knn_k5",
+  "track": "A",
+  "train_acc": 0.7111947318908749,
+  "val_acc": 0.5918712955122777,
+  "test_acc": 0.5472602739726027,
+  "confusion_matrix_test": [
+    [
+      336,
+      379
+    ],
+    [
+      282,
+      463
+    ]
+  ],
+  "precision_damaged": 0.5498812351543944,
+  "recall_damaged": 0.6214765100671141,
+  "f1_damaged": 0.5834908632640202,
+  "hyperparameters": {
+    "n_neighbors": 5,
+    "n_jobs": -1,
+    "input": "56x56x3 flattened, scaled to [-1,1)"
+  },
+  "train_time_sec": 0.23166190000483766
+}

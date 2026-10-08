@@ -109,6 +109,8 @@ def load_data(size=224, data_dir="data", val_frac=0.10, seed=42, mmap=False):
     Images are uint8 (N, size, size, 3); labels are 1 = damaged, 0 = undamaged.
     Validation is a stratified split of the TRAIN set (same split for everyone,
     because of the fixed seed). Test is PEER's official held-out test set.
+    All three splits are returned in a fixed RANDOM order (the raw data is sorted
+    by class), so taking the first N samples of any split is safe.
 
     Scale at use time, e.g. for the paper's [-1, 1) normalisation:
         x = X.astype("float32") / 128.0 - 1.0
@@ -132,7 +134,16 @@ def load_data(size=224, data_dir="data", val_frac=0.10, seed=42, mmap=False):
     mask = np.ones(len(y), dtype=bool)
     mask[val_idx] = False
     tr_idx = np.where(mask)[0]
-    return X[tr_idx], y[tr_idx], X[val_idx], y[val_idx], X_te, y_te
+
+    # The raw PEER files are stored SORTED BY CLASS, so "the first N images" would
+    # all be one class. We therefore return every split in a fixed random order.
+    # This changes only the ORDER: which images are in train / val / test is
+    # exactly the same as before. (Fixed seeds, so the order is identical on every
+    # machine and every run.)
+    tr_idx = np.random.RandomState(seed + 1).permutation(tr_idx)
+    val_idx = np.random.RandomState(seed + 2).permutation(val_idx)
+    te_idx = np.random.RandomState(seed + 3).permutation(len(y_te))
+    return X[tr_idx], y[tr_idx], X[val_idx], y[val_idx], X_te[te_idx], y_te[te_idx]
 
 
 def preview_samples(data_dir="data", n=8, out="preview.png"):

@@ -1,0 +1,29 @@
+{
+  "model": "svm_rbf",
+  "track": "A",
+  "train_acc": 0.8423330197554092,
+  "val_acc": 0.6435224386113463,
+  "test_acc": 0.6383561643835617,
+  "confusion_matrix_test": [
+    [
+      373,
+      342
+    ],
+    [
+      186,
+      559
+    ]
+  ],
+  "precision_damaged": 0.6204217536071032,
+  "recall_damaged": 0.7503355704697987,
+  "f1_damaged": 0.6792223572296475,
+  "hyperparameters": {
+    "kernel": "rbf",
+    "C": 1.0,
+    "gamma": 0.001,
+    "cache_size": 1000,
+    "random_state": 42,
+    "input": "56x56x3 flattened, scaled to [-1,1)"
+  },
+  "train_time_sec": 950.9955807999941
+}

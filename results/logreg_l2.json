@@ -1,0 +1,29 @@
+{
+  "model": "logreg_l2",
+  "track": "A",
+  "train_acc": 0.8546566321730951,
+  "val_acc": 0.5453005927180355,
+  "test_acc": 0.5636986301369863,
+  "confusion_matrix_test": [
+    [
+      339,
+      376
+    ],
+    [
+      261,
+      484
+    ]
+  ],
+  "precision_damaged": 0.5627906976744186,
+  "recall_damaged": 0.6496644295302013,
+  "f1_damaged": 0.6031152647975077,
+  "hyperparameters": {
+    "penalty": "l2",
+    "C": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 500,
+    "random_state": 42,
+    "input": "56x56x3 flattened, scaled to [-1,1)"
+  },
+  "train_time_sec": 18.559763900004327
+}
