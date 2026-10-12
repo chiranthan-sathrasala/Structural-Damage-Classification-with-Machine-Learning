@@ -1,0 +1,37 @@
+{
+  "model": "hybrid_svm_mixed9",
+  "track": "A",
+  "train_acc": 0.9292568203198495,
+  "val_acc": 0.8467400508044031,
+  "test_acc": 0.8547945205479452,
+  "confusion_matrix_test": [
+    [
+      624,
+      91
+    ],
+    [
+      121,
+      624
+    ]
+  ],
+  "precision_damaged": 0.8727272727272727,
+  "recall_damaged": 0.8375838926174497,
+  "f1_damaged": 0.8547945205479452,
+  "hyperparameters": {
+    "kernel": "rbf",
+    "C": 1.0,
+    "gamma": 0.0003,
+    "gamma_grid": [
+      1e-05,
+      0.0001,
+      0.0003,
+      0.001,
+      0.003,
+      0.01,
+      0.1
+    ],
+    "features": "InceptionV3 mixed9 (GAP)",
+    "scaling": "StandardScaler fitted on train"
+  },
+  "train_time_sec": 131.835196
+}
