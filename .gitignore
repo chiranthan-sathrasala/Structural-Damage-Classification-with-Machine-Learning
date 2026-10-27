@@ -1,9 +1,7 @@
-data/
+﻿data/
 *.npy
 models/
+*.keras
+results_smoke/
+.venv/
 __pycache__/
-results_smoke/.venv/
-__pycache__/
-data/
-*.npy
-models/*.keras
