@@ -1,34 +1,32 @@
 {
-  "model": "InceptionV3 Frozen",
-  "test_accuracy": 0.7726027397260274,
-  "classes": [
-    "undamaged",
-    "damaged"
-  ],
-  "precision": [
-    0.7671410090556274,
-    0.7787481804949054
-  ],
-  "recall": [
-    0.7959731543624161,
-    0.7482517482517482
-  ],
-  "f1_score": [
-    0.7812911725955204,
-    0.7631954350927247
-  ],
-  "support": [
-    745,
-    715
-  ],
-  "confusion_matrix": [
+  "model": "inceptionv3_frozen",
+  "track": "B",
+  "train_acc": 0.8499529633113829,
+  "val_acc": 0.8035563082133785,
+  "test_acc": 0.8157534246575342,
+  "confusion_matrix_test": [
     [
-      593,
-      152
+      565,
+      150
     ],
     [
-      180,
-      535
+      119,
+      626
     ]
-  ]
+  ],
+  "precision_damaged": 0.8067010309278351,
+  "recall_damaged": 0.8402684563758389,
+  "f1_damaged": 0.8231426692965155,
+  "hyperparameters": {
+    "backbone": "inceptionv3",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "finetune_top_layers": 0,
+    "finetune_lr": null,
+    "augmentation": "none",
+    "epochs_run": 12,
+    "batch_size": 32,
+    "preprocessing": "Rescaling [-1,1] inside model"
+  },
+  "train_time_sec": 365.789288156
 }

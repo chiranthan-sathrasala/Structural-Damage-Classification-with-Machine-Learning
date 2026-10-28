@@ -1,41 +1,32 @@
 {
-  "model": "MobileNetV2 Frozen",
-  "test_accuracy": 0.8308219178082191,
-  "confusion_matrix": [
+  "model": "mobilenetv2_frozen",
+  "track": "B",
+  "train_acc": 0.8585136406396989,
+  "val_acc": 0.8306519898391194,
+  "test_acc": 0.8397260273972603,
+  "confusion_matrix_test": [
     [
-      596,
-      149
+      574,
+      141
     ],
     [
-      98,
-      617
+      93,
+      652
     ]
   ],
-  "classification_report": {
-    "Undamaged": {
-      "precision": 0.8587896253602305,
-      "recall": 0.8,
-      "f1-score": 0.828353022932592,
-      "support": 745.0
-    },
-    "Damaged": {
-      "precision": 0.8054830287206266,
-      "recall": 0.862937062937063,
-      "f1-score": 0.8332207967589467,
-      "support": 715.0
-    },
-    "accuracy": 0.8308219178082191,
-    "macro avg": {
-      "precision": 0.8321363270404285,
-      "recall": 0.8314685314685315,
-      "f1-score": 0.8307869098457694,
-      "support": 1460.0
-    },
-    "weighted avg": {
-      "precision": 0.8326839975538493,
-      "recall": 0.8308219178082191,
-      "f1-score": 0.8307368984708411,
-      "support": 1460.0
-    }
-  }
+  "precision_damaged": 0.8221941992433796,
+  "recall_damaged": 0.8751677852348994,
+  "f1_damaged": 0.8478543563068921,
+  "hyperparameters": {
+    "backbone": "mobilenetv2",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "finetune_top_layers": 0,
+    "finetune_lr": null,
+    "augmentation": "none",
+    "epochs_run": 11,
+    "batch_size": 32,
+    "preprocessing": "Rescaling [-1,1] inside model"
+  },
+  "train_time_sec": 136.33446420200016
 }
