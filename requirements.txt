@@ -1,9 +1,6 @@
-# Shared by Person A and Person B. Add what you install; pin versions once both machines work.
 numpy
 matplotlib
 pillow
 scikit-learn
 tensorflow
-# Person B (demo app) - pick one:
-streamlit
-# gradio
+gradio
