@@ -1,4 +1,7 @@
-import argparse, json, os, random, sys, time
+"""Train a CNN on the shared split (frozen or fine-tuned). Run from the repo root:
+    python src/deep/train_cnn.py --backbone mobilenetv2 [--aug] [--finetune 30] [--seed 1] [--results_dir results/seeds]
+Labels: 1 = damaged, 0 = undamaged. The default seed (42) reproduces the main results."""
+import argparse, os, random, sys, time
 import numpy as np
 import tensorflow as tf
 
@@ -6,7 +9,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 from data_utils import load_data
 from results_utils import accuracy, save_results
 
-SEED = 42
 BACKBONES = {"inceptionv3": tf.keras.applications.InceptionV3,
              "mobilenetv2": tf.keras.applications.MobileNetV2,
              "mobilenet": tf.keras.applications.MobileNet}
@@ -43,13 +45,16 @@ def main():
     ap.add_argument("--aug", action="store_true")
     ap.add_argument("--finetune", type=int, default=0, help="unfreeze top N backbone layers")
     ap.add_argument("--epochs", type=int, default=15)
+    ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--results_dir", default="results")
     a = ap.parse_args()
 
-    random.seed(SEED); np.random.seed(SEED); tf.keras.utils.set_random_seed(SEED)
-    X_tr, y_tr, X_val, y_val, X_te, y_te = load_data(size=224)
+    random.seed(a.seed); np.random.seed(a.seed); tf.keras.utils.set_random_seed(a.seed)
+    X_tr, y_tr, X_val, y_val, X_te, y_te = load_data(size=224)   # the split itself is always the same
     print("train/val/test:", len(X_tr), len(X_val), len(X_te), "| test damaged:", int(y_te.sum()))
 
-    name = f"{a.backbone}_" + (f"finetune{a.finetune}" if a.finetune else "frozen") + ("_aug" if a.aug else "")
+    name = (f"{a.backbone}_" + (f"finetune{a.finetune}" if a.finetune else "frozen")
+            + ("_aug" if a.aug else "") + (f"_seed{a.seed}" if a.seed != 42 else ""))
     os.makedirs("models", exist_ok=True)
     ckpt = f"models/{name}.keras"
     model, base = build(a.backbone, a.aug)
@@ -75,9 +80,9 @@ def main():
                  hyperparameters={"backbone": a.backbone, "optimizer": "adam", "lr": 1e-3,
                                   "finetune_top_layers": a.finetune, "finetune_lr": 1e-5 if a.finetune else None,
                                   "augmentation": "flip+zoom0.1" if a.aug else "none",
-                                  "epochs_run": epochs_run, "batch_size": 32,
+                                  "epochs_run": epochs_run, "batch_size": 32, "seed": a.seed,
                                   "preprocessing": "Rescaling [-1,1] inside model"},
-                 train_time_sec=secs, results_dir="results")
+                 train_time_sec=secs, results_dir=a.results_dir)
 
 if __name__ == "__main__":
     main()

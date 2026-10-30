@@ -1,0 +1,33 @@
+{
+  "model": "mobilenetv2_finetune30_aug_seed3",
+  "track": "B",
+  "train_acc": 0.919002822201317,
+  "val_acc": 0.859441151566469,
+  "test_acc": 0.8561643835616438,
+  "confusion_matrix_test": [
+    [
+      613,
+      102
+    ],
+    [
+      108,
+      637
+    ]
+  ],
+  "precision_damaged": 0.8619756427604871,
+  "recall_damaged": 0.8550335570469799,
+  "f1_damaged": 0.8584905660377359,
+  "hyperparameters": {
+    "backbone": "mobilenetv2",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "finetune_top_layers": 30,
+    "finetune_lr": 1e-05,
+    "augmentation": "flip+zoom0.1",
+    "epochs_run": 17,
+    "batch_size": 32,
+    "seed": 3,
+    "preprocessing": "Rescaling [-1,1] inside model"
+  },
+  "train_time_sec": 393.1124045070003
+}
