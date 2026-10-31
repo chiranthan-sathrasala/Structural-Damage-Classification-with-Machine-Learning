@@ -19,6 +19,7 @@ Test set = PEER's official held-out test set (1,460 images, 51.0% damaged). Vali
 | RBF-SVM, raw pixels | 0.842 | 0.644 | 0.638 | 0.620 | 0.750 | 0.679 |
 | Hybrid: RBF-SVM on InceptionV3 `mixed9` features | 0.929 | 0.847 | 0.855 | 0.873 | 0.838 | 0.855 |
 | InceptionV3, frozen backbone | 0.850 | 0.804 | 0.816 | 0.807 | 0.840 | 0.823 |
+| MobileNet (V1, the paper's model), frozen backbone | 0.869 | 0.825 | 0.838 | 0.833 | 0.855 | 0.844 |
 | MobileNetV2, frozen backbone | 0.859 | 0.831 | 0.840 | 0.822 | 0.875 | 0.848 |
 | MobileNetV2, frozen + augmentation | 0.838 | 0.814 | 0.832 | 0.818 | 0.862 | 0.839 |
 | MobileNetV2, fine-tuned (top 30 layers) | 0.919 | 0.848 | 0.845 | 0.815 | 0.899 | 0.855 |
@@ -29,8 +30,10 @@ The same table is generated from `results/*.json` by `python results_utils.py --
 **Main observations**
 - Raw-pixel models are weak (best test accuracy 0.638) and overfit (train 0.84 to 0.86 against validation 0.54 to 0.64). Features from a pretrained CNN lift the same classifier (RBF-SVM) by about 21 points.
 - All CNN variants reach 0.82 to 0.86 test accuracy. The best (fine-tuned MobileNetV2 with flip/zoom augmentation, 0.864) and the hybrid SVM (0.855) are a tie within noise: with 1,460 test images, each accuracy is uncertain by about ±1.8 points (95%).
-- Fine-tuning lowers bias but widens the train/validation gap (0.07 against 0.03 for the frozen model), as in the paper. Augmentation alone did not help the frozen model (0.832 against 0.840) but helped together with fine-tuning. These are single runs, so treat the gains as modest.
-- MobileNetV2 beat InceptionV3 in our runs (0.840 against 0.816), the opposite of the paper's finding.
+- Fine-tuning lowers bias but widens the train/validation gap (0.07 against 0.03 for the frozen model), as in the paper. Augmentation alone did not help the frozen model (0.832 against 0.840) but helped together with fine-tuning.
+- Seed repeats (seed 42 plus seeds 1 to 3; same data split and test set): frozen MobileNetV2 reaches 0.836 ± 0.005 test accuracy (range 0.829 to 0.840) and fine-tuned + augmentation 0.863 ± 0.006 (range 0.856 to 0.871). The improvement of about 2.7 points is consistent across seeds (the worst fine-tuned + augmentation run is better than the best frozen run), but it is still within the test-set uncertainty of the hybrid SVM (0.855). See `results/seed_summary.md`.
+- Both MobileNet (V1 and V2) beat InceptionV3 in our runs (0.838 and 0.840 against 0.816), the opposite of the paper's finding.
+- Learning curve (frozen backbone, small head on cached features, 3 random subsets per size): validation accuracy rises only 2 to 3 points between 1,063 and about 5,000 training images and is flat beyond that (MobileNetV2 0.798 to 0.821, InceptionV3 0.770 to 0.802), while training accuracy falls toward it, leaving a gap of about 0.04 at the full training size. Both curves plateau well below 100%, which points to limited model capacity (bias) rather than a lack of data, in line with fine-tuning helping. Figures: `docs/learning_curve_mobilenetv2.png`, `docs/learning_curve_inceptionv3.png`.
 - Recall for the damaged class (0.84 to 0.90 for the CNNs) is higher than precision, which is the safer direction for damage screening. Misclassified examples are mostly ambiguous cases (see `docs/mobilenetv2_finetune30_aug_misclassified_examples.png`).
 
 ## Dataset
@@ -91,8 +94,18 @@ python src/deep/train_cnn.py --backbone mobilenetv2                          # M
 python src/deep/train_cnn.py --backbone mobilenetv2 --aug                    # frozen + flip/zoom augmentation
 python src/deep/train_cnn.py --backbone mobilenetv2 --finetune 30            # fine-tune top 30 layers
 python src/deep/train_cnn.py --backbone mobilenetv2 --finetune 30 --aug      # best model
+python src/deep/train_cnn.py --backbone mobilenet                            # MobileNet V1, frozen (the paper's model)
 ```
 Each run takes about 2 to 6 minutes on a T4. Models are saved to `models/<name>.keras` (git-ignored), for example `models/mobilenetv2_finetune30_aug.keras`.
+
+Seed repeats and learning curve:
+```
+# repeat the two main MobileNetV2 configurations with other seeds (results go to results/seeds/); run for --seed 1, 2 and 3
+python src/deep/train_cnn.py --backbone mobilenetv2 --seed 1 --results_dir results/seeds
+python src/deep/train_cnn.py --backbone mobilenetv2 --finetune 30 --aug --seed 1 --results_dir results/seeds
+python src/deep/summarize_seeds.py                                 # mean/std over seeds (uses results/ for seed 42) -> results/seed_summary.md
+python src/deep/learning_curve.py --backbone mobilenetv2           # learning curve by training-set size (also: --backbone inceptionv3)
+```
 
 Error analysis and figures:
 ```
@@ -133,22 +146,23 @@ data/, models/         generated locally, git-ignored
 
 **Hybrid model.** Features are extracted from the InceptionV3 layer `mixed9` (ImageNet weights) with global average pooling (2,048 features), standardized (scaler fitted on the training set only), and fed to an RBF-SVM. γ is chosen on validation accuracy from a sweep (1e-5 to 1e-1, best 3e-4); the validation curve is in `docs/gamma_curve_mixed9.png`.
 
-**CNNs (transfer learning).** A frozen ImageNet backbone (InceptionV3 or MobileNetV2), global average pooling, dropout 0.2 and a single sigmoid output (P(damaged)). Pixel scaling to [-1, 1] is a layer inside the model. Adam (lr 1e-3), batch size 32, early stopping on validation loss. For fine-tuning, the top 30 backbone layers are unfrozen (BatchNorm layers kept frozen) and training continues with lr 1e-5. Augmentation is random horizontal flip and zoom (0.1), active only during training.
+**CNNs (transfer learning).** A frozen ImageNet backbone (InceptionV3, MobileNet or MobileNetV2), global average pooling, dropout 0.2 and a single sigmoid output (P(damaged)). Pixel scaling to [-1, 1] is a layer inside the model. Adam (lr 1e-3), batch size 32, early stopping on validation loss. For fine-tuning, the top 30 backbone layers are unfrozen (BatchNorm layers kept frozen) and training continues with lr 1e-5. Augmentation is random horizontal flip and zoom (0.1), active only during training.
 
 ## What we changed or added compared with the paper
 
 - Larger dataset release with PEER's official test set and a separate validation split (the paper had no held-out test set). All model selection uses validation only; the test set is used once per model.
 - Hybrid model reads features from the named layer `mixed9` (the paper used "layer 288", a numbering that depends on the software version) and standardizes them.
-- MobileNetV2 instead of MobileNet (V1) as the lightweight CNN.
-- **Fine-tuning and augmentation experiments**, including their combination. This improved the frozen MobileNetV2 from 0.840 to 0.864 test accuracy (modest, within about one standard error of the hybrid model).
+- Both MobileNet (V1, the paper's model) and MobileNetV2 were run; MobileNetV2 is the backbone used for fine-tuning and augmentation.
+- Repeated the two main MobileNetV2 configurations with four seeds, and produced learning curves by training-set size for MobileNetV2 and InceptionV3.
+- **Fine-tuning and augmentation experiments**, including their combination. This improved the frozen MobileNetV2 from 0.836 to 0.863 mean test accuracy over four seeds (about 2.7 points, consistent across seeds, and within the test-set uncertainty of the hybrid model).
 - Preprocessing built into the saved model, a reusable results format shared by both tracks, error analysis (confusion matrices and misclassified-image gallery), and a working demo app.
 
 ## Limitations
 
-- Single training run per configuration, no repeated seeds, so differences of one or two points are within noise.
+- Only the frozen and the best MobileNetV2 configurations were repeated with several seeds (4 runs each); the other models are single runs. Seeds change initialization, shuffling and augmentation but not the data split or test set, so differences of one or two points between different models remain within noise.
 - The raw-pixel models and the hybrid SVM were not tuned beyond γ for the hybrid; the logistic regression stopped at its iteration limit (500) without fully converging.
 - Frozen InceptionV3 scores below the SVM on its own `mixed9` features (0.816 against 0.855). We did not investigate this further. Likely factors are the layer used (the final layer for the CNN head, `mixed9` for the SVM) and the linear head, but this is untested.
-- We did not produce a learning curve by training-set size (the paper did).
+- The learning curve uses a simple head on cached frozen features (no dropout, no augmentation, 3 random subsets per size), so it describes the frozen setup and not the fine-tuned models.
 - Label noise and ambiguity in the dataset limit achievable accuracy.
 - The demo is an academic prototype, not a substitute for professional structural inspection.
 
